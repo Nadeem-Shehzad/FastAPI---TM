@@ -1,19 +1,19 @@
-from app.models.user_model import User
-
+from app.models.user_model import UserCreate
+from app.core.database import user_collection
 
 class UserService:
 
-    def getUser(self):
-        return {
-        'name': 'Nadeem',
-        'age': 24
-    }
+    async def getUser(self):
+        users = []
+        async for user in user_collection.find():
+            user["id"] = str(user["_id"])
+            users.append(user)
+        return users
 
-    def createUser(self, user:User):
+    async def createUser(self, user:UserCreate):
         user_dict = user.model_dump()
-        return {
-            "message": "User created",
-            "user": user_dict
-        }
+        result = await user_collection.insert_one(user_dict)
+        user_dict["id"] = str(result.inserted_id)  # convert ObjectId to string
+        return user_dict
 
 user_service = UserService()    
