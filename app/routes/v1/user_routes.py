@@ -4,7 +4,7 @@ from app.services.user_service import UserService
 from app.dependencies.user_dependency import get_user_service
 
 
-router = APIRouter(prefix='/users',tags=['User'])
+router = APIRouter()
 
 
 @router.get('/', response_model=list[UserResponse], status_code=200)
