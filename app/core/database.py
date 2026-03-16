@@ -4,4 +4,4 @@ from app.core.config import settings
 
 client = AsyncIOMotorClient(settings.MONGO_URI)
 db = client[settings.DB_NAME]
-user_collection = db['users']
+get_user_collection = db['users']
