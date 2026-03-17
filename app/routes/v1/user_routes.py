@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends
-from app.models.user_model import UserCreate, UserResponse, UpdateUser
+from app.models.user_model import UserCreate, UserResponse, UpdateUser, UserSearchRequest
 from app.services.user_service import UserService
 from app.dependencies.user_dependency import get_user_service
-from app.core.exceptions import AppException
 
 
 router = APIRouter()
@@ -37,5 +36,11 @@ async def updateUser(user_id: str, user_data: UpdateUser, user_service: UserServ
 @router.delete('/{user_id}')
 async def deleteUser(user_id: str, user_service: UserService = Depends(get_user_service)):
     deleted = await user_service.deleteUser(user_id)
-
     return deleted
+
+
+# search user - Powered by AI
+@router.post('/search')
+async def search_user(search: UserSearchRequest, user_service: UserService = Depends(get_user_service)):
+    result = await user_service.searchUser(search)
+    return result

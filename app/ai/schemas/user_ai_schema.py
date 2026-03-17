@@ -6,7 +6,7 @@ class UserAI(BaseModel):
     name: str
     email: str
     role: str
-    interests: List[str]
+    skills: List[str]
 
 class UserQuery(BaseModel):
     query: str

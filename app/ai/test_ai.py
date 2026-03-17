@@ -35,7 +35,7 @@ def view_data():
 
 # 🔹 Step 3: Test similarity search
 def test_similarity():
-    query = "AI backend engineer"
+    query = "React"
 
     query_embedding = get_embedding(query)
 

@@ -1,14 +1,14 @@
 import chromadb
-from chromadb.config import Settings
+import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Create persistent DB (stored on disk)
-client = chromadb.Client(
-    Settings(
-        persist_directory="app/ai/chroma_storage"  # folder auto-created
-    )
+# ✅ NEW WAY (no Settings, no chroma_db_impl)
+client = chromadb.PersistentClient(
+    path=os.path.join(BASE_DIR, "chroma_storage")
 )
 
-user_collection = client.get_or_create_collection(
-    name="users_collection"
+# ✅ consistent naming
+users_collection = client.get_or_create_collection(
+    name="users"
 )

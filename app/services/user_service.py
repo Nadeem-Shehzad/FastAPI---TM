@@ -1,7 +1,10 @@
-from app.models.user_model import UserCreate, UpdateUser
+from app.models.user_model import UserCreate, UpdateUser, UserSearchRequest
 from motor.motor_asyncio import AsyncIOMotorCollection
 from bson import ObjectId
 from app.core.exceptions import AppException
+from app.ai.services.user_ai_service import add_user_embedding
+from app.ai.embeddings.gemini_embed import get_embedding
+from app.ai.db.chroma_client import users_collection
 
 
 class UserService:
@@ -21,7 +24,13 @@ class UserService:
     async def createUser(self, user:UserCreate):
         user_dict = user.model_dump()
         result = await self.user_collection.insert_one(user_dict)
-        user_dict["id"] = str(result.inserted_id)  
+        user_dict["id"] = str(result.inserted_id) 
+
+        print("🔥 Calling add_user_embedding")  # DEBUG
+
+        # 🔹 Add embedding to vector DB AFTER storing in MongoDB
+        add_user_embedding(user_dict)
+
         return user_dict
 
 
@@ -71,3 +80,27 @@ class UserService:
             raise AppException('User Not Deleted', 500)
         
         return {"message": "User deleted successfully", "user_id": user_id}
+    
+
+    async def searchUser(self, search: UserSearchRequest):
+        query_embedding = get_embedding(search.query)
+        where_filter = {"role": search.role} if search.role else None
+
+        results = users_collection.query(
+            query_embeddings=[query_embedding],
+            n_results=search.n_results,
+            where=where_filter
+        )
+
+        # return document (user text) or metadata
+        users = []
+        for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
+            users.append({
+                "user_text": doc,
+                "email": meta.get("email"),
+                "role": meta.get("role"),
+                "skills": meta.get("skills")
+            })
+
+        return {"results": users} 
+    
