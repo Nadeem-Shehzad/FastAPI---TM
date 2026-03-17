@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from app.routes.v1 import user_routes
-from app.core.exceptions import AppException
+from app.core.exceptions import AppException, register_exception_handlers
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.middlewares.logging_middleware import logging_middleware
@@ -21,14 +21,6 @@ app.add_middleware(
 
 app.middleware('http')(logging_middleware)
 
-@app.exception_handler(AppException)
-async def app_exception_handler(request: Request, exec: AppException):
-    return JSONResponse(
-        status_code=exec.status_code,
-        content={
-            'success': False,
-            'message': exec.message
-        }
-    )
+register_exception_handlers(app)
 
 app.include_router(user_routes.router, prefix='/v1/users',tags=['User'])

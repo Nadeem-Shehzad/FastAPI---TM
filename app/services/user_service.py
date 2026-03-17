@@ -1,4 +1,4 @@
-from app.models.user_model import UserCreate
+from app.models.user_model import UserCreate, UpdateUser
 from motor.motor_asyncio import AsyncIOMotorCollection
 from bson import ObjectId
 from app.core.exceptions import AppException
@@ -36,4 +36,38 @@ class UserService:
 
         user['id'] = str(user['_id'])
 
-        return user   
+        return user  
+
+
+    async def updateUser(self, user_id:str, user_data: UpdateUser):
+        if not ObjectId.is_valid(user_id):
+            raise AppException('Invalid User ID', 400)
+        
+        update_dict = {k: v for k, v in user_data.dict(exclude_unset=True).items()}
+
+        if not update_dict:
+            raise AppException("No fields provided for update", 400)
+        
+        result = await self.user_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": update_dict}
+        )
+
+        if result.matched_count == 0:
+            raise AppException('User not Found', 404)
+        
+        user = await self.user_collection.find_one({"_id": ObjectId(user_id)})
+        user['id'] = str(user['_id'])
+        return user
+    
+
+    async def deleteUser(self, user_id: str):
+        if not ObjectId.is_valid(user_id):
+            raise AppException('Invalid User ID', 400)
+        
+        result = await self.user_collection.delete_one({'_id': ObjectId(user_id)})
+
+        if result.deleted_count == 0:
+            raise AppException('User Not Deleted', 500)
+        
+        return {"message": "User deleted successfully", "user_id": user_id}
