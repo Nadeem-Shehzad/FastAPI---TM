@@ -20,7 +20,5 @@ async def createUser(user: UserCreate, user_service: UserService = Depends(get_u
 
 @router.get('/{id}', response_model=UserResponse, status_code=200)
 async def getOneUser(id: str, user_service: UserService = Depends(get_user_service)):
-    
-    print("ID RECEIVED:", id)
     user = await user_service.getOneUser(id)
     return user
