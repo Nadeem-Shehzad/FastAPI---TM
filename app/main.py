@@ -4,6 +4,7 @@ from app.core.exceptions import AppException, register_exception_handlers
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.middlewares.logging_middleware import logging_middleware
+from app.ai.routes.user_ai_routes import router as user_ai_router
 
 app = FastAPI()
 
@@ -24,3 +25,4 @@ app.middleware('http')(logging_middleware)
 register_exception_handlers(app)
 
 app.include_router(user_routes.router, prefix='/v1/users',tags=['User'])
+app.include_router(user_ai_router)
