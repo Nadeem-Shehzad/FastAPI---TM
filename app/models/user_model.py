@@ -33,8 +33,8 @@ class UpdateUser(BaseModel):
 
 class UserSearchRequest(BaseModel):
     query: str
-    role: Optional[str] = None
-    n_results: Optional[int] = 5  
+    domain: Optional[str] = None 
+    n_results: int = 5  
 
 
 class SimilarUserQuery(BaseModel):

@@ -84,7 +84,7 @@ class UserService:
 
     async def searchUser(self, search: UserSearchRequest):
         query_embedding = get_embedding(search.query)
-        where_filter = {"role": search.role} if search.role else None
+        where_filter = {"domain": search.domain} if search.domain else None
 
         results = users_collection.query(
             query_embeddings=[query_embedding],
@@ -94,13 +94,24 @@ class UserService:
 
         # return document (user text) or metadata
         users = []
-        for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
-            users.append({
-                "user_text": doc,
-                "email": meta.get("email"),
-                "role": meta.get("role"),
-                "skills": meta.get("skills")
-            })
+         # 🔥 ADD THRESHOLD FILTER
+        THRESHOLD = 0.6   # tune this (0.2 strict, 0.4 loose)
 
-        return {"results": users} 
+        for doc, meta, distance in zip(
+            results["documents"][0],
+            results["metadatas"][0],
+            results["distances"][0]
+        ):
+            if distance <= THRESHOLD:   # ✅ ONLY relevant users
+                users.append({
+                    "user_text": doc,
+                    "email": meta.get("email"),
+                    "role": meta.get("role"),
+                    "skills": meta.get("skills"),
+                    "score": distance   # helpful for debugging
+                })
+
+                print("Distances:", results["distances"][0])    
+
+        return {"results": users}
     
